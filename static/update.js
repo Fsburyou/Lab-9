@@ -8,6 +8,27 @@ function updateProd(el) {
     console.log(product_id)
 }
 
+function clearBooks() {
+    fetch('/clear', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const bookList = document.getElementById('book-list');
+            bookList.innerHTML = '';
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
 function addProduct() {
     let prodName = document.getElementById('prod_name').value
     let price = document.getElementById('price').value
@@ -18,5 +39,4 @@ function addProduct() {
                              'price': price,
                              'in_stock': true})
     })
-//    console.log("Add")
 }

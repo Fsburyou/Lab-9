@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Diary</title>
+    <style>
+        * {
+            font-family: TT Mussels;
+            background-color: #F77E7E;
+        }
+
+        #add-book-form {
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+        #add-book-form label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        #add-book-form input[type="text"] {
+            width: 150px;
+            padding: 5px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+        #add-book-form button {
+            padding: 8px 15px;
+            background-color: #000000;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-right: 20px
+        }
+        #add-book-form button:hover {
+            background-color: #373737;
+        }
+
+        #book-list {
+            width: 250px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .book-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #000000;
+            font-style: italic;
+            border-radius: 6px;
+        }
+        .book-item h2 {
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+        .book-item p {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Читательский дневник</h1>
+    <svg xmlns="http://www.w3.org/2000/svg" height="100px" width="100px" viewBox="0 0 128 128" style="enable-background:new 0 0 128 128" xml:space="preserve"><path style="fill:#191919" d="M66.647 77.94 128 49.733v5.14L66.491 83.174 12.303 53.876l-.016.047a4.704 4.704 0 0 0-5.934 2.991c-1.371 3.863 3.084 5.997 3.598 6.23l.156.078 55.154 29.812L128 64.171v5.156L65.089 98.251 10.917 68.969l-.016.031a4.634 4.634 0 0 0-3.583.28 4.596 4.596 0 0 0-2.352 2.71c-1.402 3.987 3.38 6.137 3.582 6.23l.171.078 55.154 29.812L128 77.785v5.171l-64.297 30.373L6.571 82.457C3.456 81.055-1.684 76.803.543 70.479a9.208 9.208 0 0 1 4.283-5.156c-2.43-2.134-4.455-5.514-2.897-9.922a9.265 9.265 0 0 1 4.283-5.171c-2.43-2.118-4.439-5.514-2.882-9.906.763-2.321 2.43-4.252 4.657-5.389 2.056-1.028 62.35-20.264 62.35-20.264L128 40.06 66.569 66.835l-52.88-27.99c-.016 0-.031-.016-.047-.016-2.461-.794-5.078.561-5.903 3.006-1.355 3.863 3.1 5.997 3.598 6.23l.171.078L66.647 77.94z"/></svg>
+
+    <div id="add-book-form">
+        <h2>Прочитанные книги</h2>
+        <form id="new-book-form">
+            <label for="author">Author:</label>
+            <input type="text" id="author" name="author" required>
+
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+        </form>
+
+        <button type="button" onclick="addBook()">Add Book</button>
+        <button type="button" id="clear-button" onclick="clearBooks()">Clear</button>
+    </div>
+
+    <div id="book-list">
+        {% for book in books %}
+            <div class="book-item">
+                <h2>{{ book.name }}</h2>
+                <p><strong>Author:</strong> {{ book.author }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function addBook() {
+            const author = document.getElementById('author').value.trim();
+            const name = document.getElementById('name').value.trim();
+
+            if (!author || !name) {
+                alert("Please fill both fields.");
+                return;
+            }
+
+            fetch('/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    author: author,
+                    name: name,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const bookList = document.getElementById('book-list');
+                    const newBook = document.createElement('div');
+                    newBook.className = 'book-item';
+                    newBook.innerHTML = `
+                        <h2>${data.book.name}</h2>
+                        <p><strong>Author:</strong> ${data.book.author}</p>
+                    `;
+                    bookList.appendChild(newBook);
+
+                    document.getElementById('author').value = '';
+                    document.getElementById('name').value = '';
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function clearBooks() {
+            const bookList = document.getElementById('book-list');
+            bookList.innerHTML = '';
+        }
+    </script>
+</body>
+</html>
